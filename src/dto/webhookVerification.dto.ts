@@ -11,48 +11,44 @@ export interface WebhookVerificationResponseDto {
 }
 
 
-
 export interface WebhookMessageDto {
     object: string;
-    entry : [
-        {
-            id:string;
-            changes:[
-                {
-                    value:{
-                        messaging_product:string;
-                        metadata:{
-                            display_phone_number:string
-                            phone_number_id:string
-                        },
-                        contacts:[
-                            {
-                                profile:{
-                                    name:string
-                                }
-                                wa_id:string
-                            }
-                        ],
-                        messages:[
-                            {
-                                from:string;
-                                id:string;
-                                timestamp:string;
-                                text:{
-                                    body:string
-                                }
-                                type:string
-                            }
-                        ],
-                        errors:[],
-                        statuses:[{
-                            status:string;
-                        }],
+    entry: Array<{
+        id: string;
+        changes: Array<{
+            value: {
+                messaging_product: string;
+                metadata: {
+                    display_phone_number: string;
+                    phone_number_id: string;
+                };
+                contacts?: Array<{
+                    profile: {
+                        name: string;
                     };
-                    
-                    field:string;
-                }
-            ]
-        }
-    ]
+                    wa_id: string;
+                }>;
+                messages?: Array<{
+                    from: string;
+                    id: string;
+                    timestamp: string;
+                    text?: {
+                        body: string;
+                    };
+                    type: string;
+                }>;
+                statuses?: Array<{  // ✅ Add statuses typing
+                    id: string;
+                    status: string;
+                    timestamp: string;
+                    recipient_id: string;
+                    conversation?: object;
+                    pricing?: object;
+                }>;
+            };
+            field: string;
+        }>;
+    }>;
 }
+
+// ... rest of your existing DTOs

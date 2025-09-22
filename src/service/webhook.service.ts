@@ -1,4 +1,3 @@
-import { Request, Response } from "express";
 import { WebhookMessageDto, WebhookVerificationDto, WebhookVerificationResponseDto } from "../dto/webhookVerification.dto";
 import { APP_CONFIG } from "../config/app.config";
 import { MessageService } from "./message.service";
@@ -46,7 +45,6 @@ export class WebhookService {
         console.log("🔔 Webhook received");
         
         try {
-            // Use optional chaining to avoid errors
             const value = data.entry?.[0]?.changes?.[0]?.value;
             
             if (!value) {
@@ -56,7 +54,20 @@ export class WebhookService {
 
             // Check for status updates first
             if (value.statuses && value.statuses.length > 0) {
-                console.log('📍 Status update:', value.statuses[0].status);
+                const statusData = value.statuses[0];
+                console.log('📍 Status update:', statusData.status);
+                
+                // ✅ FIXED: TypeScript now knows statusData has an id property
+                if (statusData.id) {
+                    console.log('📍 Message ID:', statusData.id);
+                    await this.messageService.updateMessageStatus(
+                        statusData.id,
+                        statusData.status
+                    );
+                } else {
+                    console.log('❌ No message ID found in status update');
+                }
+                
                 return true;
             }
 
@@ -77,10 +88,18 @@ export class WebhookService {
                         return true;
                     }
 
-                    // Generate reply using Gemini
-                    console.log("🤖 Calling Gemini...");
-                    const replyMessage = await this.geminiService.generateReply(message);
-                    console.log(`📤 Gemini response: ${replyMessage}`);
+                    // Get history FIRST, before saving new message
+                    console.log("🔄 Retrieving conversation history...");
+                    const history = await this.messageService.getMessagesByUserId(phoneNumber);
+                    console.log("📊 Conversation history length BEFORE new message:", history.length);
+
+                    // THEN save the new user message
+                    await this.messageService.saveUserMessage(phoneNumber, message, messageData.id);
+                    console.log("💾 Saved new user message to database");
+
+                    // Generate reply using Gemini with history context
+                    console.log("🤖 Calling Gemini with history...");
+                    const replyMessage = await this.geminiService.generateReply(message, history);
 
                     // Send reply via WhatsApp
                     console.log("📤 Sending to WhatsApp...");
@@ -90,10 +109,9 @@ export class WebhookService {
                     return isReplied;
                 } else {
                     console.log(`📱 Non-text message type: ${messageData.type}`);
-                    // Handle non-text messages
                     const unsupportedMessage = "I currently only support text messages. Please send a text message!";
                     const isReplied = await this.messageService.sendMessage(
-                        value.contacts?.[0]?.wa_id, 
+                        value.contacts?.[0]?.wa_id!, 
                         unsupportedMessage
                     );
                     return isReplied;
