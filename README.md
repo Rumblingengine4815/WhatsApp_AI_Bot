@@ -77,7 +77,7 @@ VERSION=v23.0
 GEMINI_API_KEY=your_gemini_api_key
 
 # MongoDB
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
+MONGODB_URI=**given uri**
 
 # Debug
 DEBUG=true
@@ -135,13 +135,13 @@ Implement verification logic in your controller to return the `hub.challenge` wh
 
 ```
 User: Hello!
-Bot: Hello! How can I assist you today? 😊
+Model: Hello! How can I assist you today? 😊
 
 User: Remember I like pizza
-Bot: Got it — I'll remember you like pizza 🍕
+Model: Got it — I'll remember you like pizza 🍕
 
 User: What do I like?
-Bot: You told me you like pizza! 🍕
+Mdel: You told me you like pizza! 🍕
 ```
 
 **Notes**
@@ -167,7 +167,7 @@ src/
 
 ## 🔄 Flow explanation
 
-1. User sends message to WhatsApp number.
+1. User sends message to given WhatsApp number.
 2. Meta sends a webhook POST to your server `/webhook`.
 3. Server validates and persists incoming message to MongoDB.
 4. Server builds context (recent messages, user profile), calls Gemini API via `GeminiService`.
